@@ -11,6 +11,8 @@ ObjectPool全程无锁，线程安全可共享
 
 为重量及非线程安全的对象提供统一管理和控制。提升性能，从池中返回的对象同一时刻只能被一个线程使用。
 
+## 使用实例
+
 ``` C#
  /// <summary>
 /// 定义对象
@@ -71,6 +73,7 @@ public void TestTimeout()
     //重新放回再次获取
     pool.Return(con2);
     var con6 = pool.Get();
+    pool.Disposable();
     Assert.Pass();
 }
 
