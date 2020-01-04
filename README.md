@@ -2,7 +2,20 @@
 ## 项目说明
 
 1. 该项目改编自微软同名项目：Microsoft.Extension.ObjectPool，微软编写的Pool思路是这样的，如果池的容量为8，当池中对象为空时
-直接创建新的对象，可以超过8个，但是它容器只管理8对象的引用，不会进行溢出判断。会有内存泄漏的问题  
+直接创建新的对象，实际可以超过8个，但是它容器只管理8对象的引用。 如果该对象是实现了IDisposable接口并且pool是安照下面的方式创建的
+则溢出的对象会自动释放，也无法从容器中获取到这个已被释放的。全程无锁，线程安全可共享。
+``` C#
+ var poolProvider = new DefaultObjectPoolProvider();
+ poolProvider.MaximumRetained = 2;
+ var pool = poolProvider.Create(new Policy<Connection>());
+ var c1 = pool.Get();
+ var c2 = pool.Get();
+ var c3 = pool.Get();
+ pool.Return(c1);
+ pool.Return(c2);
+ //已超出，会自动释放
+ pool.Return(c3);
+```
 
 2. 而被我改编之后的逻辑是，创建之前会判断容器已创建的对象总数。当超过容器的最大容量，将发起线程等待直至超时或者，有新的对象放回容器
 ObjectPool全程无锁，线程安全可共享。
