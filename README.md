@@ -1,31 +1,31 @@
 # ObjectPool
 
 ``` C#
+ /// <summary>
+/// 定义对象
+/// </summary>
+public class Connection
+{
+    public int Id { get; set; } = 0;
+    public System.Guid Guid { get; set; } = System.Guid.NewGuid();
+}
 /// <summary>
-    /// 定义对象
-    /// </summary>
-    public class Connection
+/// 定义策略
+/// </summary>
+/// <typeparam name="T"></typeparam>
+public class Policy<T> : IPooledObjectPolicy<T> where T : class, new()
+{
+    public T Create()
     {
-        public int Id { get; set; } = 0;
-        public System.Guid Guid { get; set; } = System.Guid.NewGuid();
+        return new T();
     }
-    /// <summary>
-    /// 定义策略
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public class Policy<T> : IPooledObjectPolicy<T> where T : class, new()
-    {
-        public T Create()
-        {
-            return new T();
-        }
 
-        public bool Return(T obj)
-        {
-            (obj as Connection).Id++;
-            return true;
-        }
+    public bool Return(T obj)
+    {
+        (obj as Connection).Id++;
+        return true;
     }
+}
 ```
 
 ``` C#
