@@ -1,5 +1,8 @@
 # ObjectPool
-
+## 项目说明
+ 
+    该项目改编自微软同名项目：Microsoft.Extension.ObjectPool，微软编写的Pool思路是这样的，如果池的容量未8，当池中对象为空时直接创建新的对象，可以超过8个，但是它容器只管理8对象的引用，不会进行溢出判断。会有内存泄漏的问题
+    而被我改编之后的逻辑是，创建之前会判断容器已创建的对象总数。当超过容器的最大容量，将发起线程等待直至超时或者，有新的对象放回容器
 ``` C#
  /// <summary>
 /// 定义对象
@@ -34,8 +37,10 @@ public void TestTimeout()
 {
     //最大两个对象，
     var pool = new ObjectPool<Connection>(new Policy<Connection>(), 2,10000);
+    //获取对象
     var con1 = pool.Get();
     var con2 = pool.Get();
+    //换给容器
     pool.Return(con1);
     pool.Return(con2);
     var con3 = pool.Get();
