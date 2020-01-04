@@ -46,25 +46,32 @@ namespace Microsoft.Extensions.ObjectPool
                 {
                     var task = Task.Run(() =>
                     {
-                        while (item == null || Interlocked.CompareExchange(ref _firstItem, null, item) != item)
+                        while (true)
                         {
+                            item = _firstItem;
+                            if (Interlocked.CompareExchange(ref _firstItem, null, item) == item)
+                            {
+                                break;
+                            }
                         }
                         return item;
                     });
 
-                    if (!task.Wait(100))
+                    if (!task.Wait(_timeout))
                     {
-                        throw new TimeoutException();
+                        throw new TimeoutException($"Timeout in getting {typeof(T).Name} instance, please expand the capacity appropriately");
                     }
                     return task.Result;
                 }
             }
             return item;
         }
+    
         private T Create()
         {
             return _policy.Create();
         }
+      
         public void Return(T obj)
         {
             if (_policy.Return(obj))
@@ -79,6 +86,7 @@ namespace Microsoft.Extensions.ObjectPool
                 }
             }
         }
+      
         public void Dispose()
         {
             if (typeof(IDisposable).IsAssignableFrom(typeof(T)))
